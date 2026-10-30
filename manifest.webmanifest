@@ -1,0 +1,13 @@
+{
+  "name": "Mein Schichtplan",
+  "short_name": "Schichtplan",
+  "description": "Persönlicher Schichtplan mit fortlaufendem 35-Tage-Rhythmus",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#101827",
+  "icons": [
+    {"src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}
+  ]
+}
