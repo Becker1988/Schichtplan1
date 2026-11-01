@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<meta name="description" content="Persönlicher Schichtplan mit 35-Tage-Rhythmus.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>Mein Schichtplan</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#151f30;--muted:#aab6c8;--line:#2a3850}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(160deg,#101b2d,#080d16);color:#f4f7fb;font:16px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+main{max-width:760px;margin:auto;padding:20px 14px 36px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+h1{font-size:25px;margin:0} .sub{color:var(--muted);font-size:13px;margin-top:4px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 8px 24px #0002}
+button{background:#26364e;color:#fff;border:1px solid #40536f;border-radius:12px;padding:10px 14px;font-size:16px;cursor:pointer}
+button:active{transform:scale(.98)}
+.monthbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.monthbar strong{font-size:20px;text-align:center;flex:1}
+.week,.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.week div{text-align:center;color:var(--muted);font-size:12px;padding:4px 0}
+.day{min-height:68px;border-radius:11px;padding:7px 4px;color:#101827;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:700}
+.day .num{font-size:16px}.day .kind{font-size:10px}
+.empty{min-height:68px}
+.frueh{background:#facc15}.spaet{background:#ef4444}.nacht{background:#3b82f6;color:white}.frei{background:#22c55e}
+.today{box-shadow:inset 0 0 0 2px #101827}.holiday{outline:3px solid #fff;outline-offset:-3px}.holiday.today{outline:3px solid #fff;outline-offset:-3px;box-shadow:inset 0 0 0 2px #101827}
+.legend{display:flex;flex-wrap:wrap;gap:9px 15px;margin-top:14px;color:var(--muted);font-size:13px}
+.dot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.next{display:flex;align-items:center;gap:14px}
+.swatch{width:14px;height:48px;border-radius:8px}
+.next h2{font-size:18px;margin:0 0 3px}.next p{margin:0;color:var(--muted);font-size:14px}
+.details{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.detail{background:#0f1928;border-radius:12px;padding:12px}
+.detail b{display:block;margin-bottom:4px}.detail span{color:var(--muted);font-size:14px}
+.small{font-size:12px;color:var(--muted);line-height:1.5}
+@media(max-width:420px){main{padding:14px 9px 28px}.panel{padding:12px}.day{min-height:57px}.empty{min-height:57px}.day .kind{font-size:9px}.day .num{font-size:14px}.week,.calendar{gap:4px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+ <div><h1>Mein Schichtplan</h1><div class="sub">Persönlicher 35-Tage-Rhythmus</div></div>
+ <button id="todayBtn">Heute</button>
+</header>
+<section class="panel">
+ <div class="monthbar">
+  <button id="prev" aria-label="Vorheriger Monat">‹</button>
+  <strong id="monthTitle"></strong>
+  <button id="next" aria-label="Nächster Monat">›</button>
+ </div>
+ <div class="week"><div>Mo</div><div>Di</div><div>Mi</div><div>Do</div><div>Fr</div><div>Sa</div><div>So</div></div>
+ <div class="calendar" id="calendar"></div>
+ <div class="legend">
+  <span><i class="dot" style="background:#facc15"></i>Früh</span>
+  <span><i class="dot" style="background:#ef4444"></i>Spät</span>
+  <span><i class="dot" style="background:#3b82f6"></i>Nacht</span>
+  <span><i class="dot" style="background:#22c55e"></i>Frei</span>
+  <span><i class="dot" style="background:transparent;border:2px solid white"></i>Feiertag (Bayern)</span>
+ </div>
+</section>
+<section class="panel">
+ <div class="sub" style="margin-bottom:9px">NÄCHSTE SCHICHT</div>
+ <div class="next"><div class="swatch" id="nextSwatch"></div><div><h2 id="nextTitle">–</h2><p id="nextDate">–</p><p id="nextTime">–</p></div></div>
+</section>
+<section class="panel">
+ <h2 style="font-size:17px;margin:0 0 12px">Deine Schichtzeiten</h2>
+ <div class="details">
+  <div class="detail"><b>Früh</b><span>06:00–14:00 · 8 Std.</span></div>
+  <div class="detail"><b>Spät</b><span>14:00–22:00 · 8 Std.</span></div>
+  <div class="detail"><b>Nacht</b><span>22:00–06:00 · 8 Std.</span></div>
+  <div class="detail"><b>Sonntag Früh</b><span>06:00–18:00 · 12 Std.</span></div>
+  <div class="detail"><b>Sonntag Nacht</b><span>18:00–06:00 · 12 Std.</span></div>
+ </div>
+ <p class="small">Start des Rhythmus: Freitag, 30.10.2026 – erste Nachtschicht. Weiße Rahmen kennzeichnen die gesetzlichen Feiertage in Bayern einschließlich Mariä Himmelfahrt (15. August, in Burghausen gesetzlicher Feiertag). Das Augsburger Friedensfest (nur in Augsburg) ist nicht markiert. Sonntags dauern Früh- und Nachtschichten 12 Stunden.</p>
+</section>
+<p class="small">Der Kalender berechnet deinen Schichtzyklus fortlaufend ab dem festgelegten Startdatum. Die Datei läuft direkt im Browser und benötigt keine zusätzliche App oder Anmeldung.</p>
+</main>
+<script>
+const cycle = [
+ 'nacht','nacht','nacht',
+ 'frei','frei','frei',
+ 'spaet','spaet','spaet',
+ 'frei',
+ 'frueh','frueh',
+ 'nacht','nacht',
+ 'frei','frei','frei',
+ 'spaet','spaet','spaet',
+ 'frei',
+ 'frueh','frueh','frueh',
+ 'nacht','nacht',
+ 'frei','frei','frei','frei','frei','frei','frei',
+ 'frueh','frueh'
+];
+const start = new Date(2026,9,30);
+const names = {frueh:'Früh',spaet:'Spät',nacht:'Nacht',frei:'Frei'};
+const colors = {frueh:'#facc15',spaet:'#ef4444',nacht:'#3b82f6',frei:'#22c55e'};
+const times = {frueh:'06:00–14:00 Uhr',spaet:'14:00–22:00 Uhr',nacht:'22:00–06:00 Uhr',frei:'Arbeitsfrei'};
+let shown = new Date(); shown.setDate(1);
+const today = new Date(); today.setHours(0,0,0,0);
+function dayOnly(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+function shiftFor(d){
+ const diff=Math.round((dayOnly(d)-start)/86400000);
+ return cycle[((diff%cycle.length)+cycle.length)%cycle.length];
+}
+// Gesetzliche Feiertage in Bayern inklusive Mariä Himmelfahrt für Burghausen.
+// Augsburger Friedensfest gilt nur in Augsburg.
+function easterSunday(year){
+ const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4;
+ const f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3);
+ const h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4;
+ const l=(32+2*e+2*i-h-k+7)%7,m=Math.floor((a+11*h+22*l)/451);
+ const n=h+l-7*m+114;
+ return new Date(year,Math.floor(n/31)-1,n%31+1);
+}
+function addDays(date,n){const d=new Date(date);d.setDate(d.getDate()+n);return d}
+function dateKey(d){return (d.getMonth()+1)+'-'+d.getDate()}
+function holidayName(d){
+ const fixed={'1-1':'Neujahr','1-6':'Heilige Drei Könige','5-1':'Tag der Arbeit','8-15':'Mariä Himmelfahrt','10-3':'Tag der Deutschen Einheit','11-1':'Allerheiligen','12-25':'1. Weihnachtstag','12-26':'2. Weihnachtstag'};
+ const k=dateKey(d);if(fixed[k])return fixed[k];
+ const easter=easterSunday(d.getFullYear());
+ const movable=[[-2,'Karfreitag'],[1,'Ostermontag'],[39,'Christi Himmelfahrt'],[50,'Pfingstmontag'],[60,'Fronleichnam']];
+ for(const [offset,name] of movable){if(dateKey(addDays(easter,offset))===k)return name}
+ return null;
+}
+function isSunday(d){return d.getDay()===0}
+function shiftTime(d,s){
+ if(s==='frei') return 'Frei';
+ if(isSunday(d)){
+  if(s==='frueh') return '06:00–18:00 Uhr · 12 Std.';
+  if(s==='nacht') return '18:00–06:00 Uhr · 12 Std.';
+  return '12 Stunden · genaue Uhrzeit nicht angegeben';
+ }
+ return times[s]+' · 8 Std.';
+}
+function render(){
+ document.getElementById('monthTitle').textContent=new Intl.DateTimeFormat('de-DE',{month:'long',year:'numeric'}).format(shown);
+ const grid=document.getElementById('calendar');grid.innerHTML='';
+ const first=new Date(shown.getFullYear(),shown.getMonth(),1);
+ const offset=(first.getDay()+6)%7;
+ const count=new Date(shown.getFullYear(),shown.getMonth()+1,0).getDate();
+ for(let i=0;i<offset;i++){const e=document.createElement('div');e.className='empty';grid.append(e)}
+ for(let day=1;day<=count;day++){
+  const d=new Date(shown.getFullYear(),shown.getMonth(),day);
+  const s=shiftFor(d);const holiday=holidayName(d);
+  const cell=document.createElement('div');cell.className='day '+s+(d.getTime()===today.getTime()?' today':'')+(holiday?' holiday':'');
+  const n=document.createElement('span');n.className='num';n.textContent=day;
+  const k=document.createElement('span');k.className='kind';k.textContent=names[s];
+  cell.append(n,k);cell.title=(holiday?holiday+' · ':'')+names[s]+' · '+shiftTime(d,s);
+  cell.addEventListener('click',()=>{document.getElementById('nextTitle').textContent=names[s]+' – '+d.toLocaleDateString('de-DE',{weekday:'long'});document.getElementById('nextDate').textContent=d.toLocaleDateString('de-DE',{day:'2-digit',month:'long',year:'numeric'});document.getElementById('nextTime').textContent=(holiday?holiday+' · ':'')+shiftTime(d,s);document.getElementById('nextSwatch').style.background=colors[s]});
+  grid.append(cell);
+ }
+ updateNext();
+}
+function updateNext(){
+ let d=dayOnly(today),s=shiftFor(d),tries=0;
+ while(s==='frei'&&tries<40){d.setDate(d.getDate()+1);s=shiftFor(d);tries++}
+ document.getElementById('nextTitle').textContent=names[s];
+ document.getElementById('nextDate').textContent=d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+ document.getElementById('nextTime').textContent=shiftTime(d,s);
+ document.getElementById('nextSwatch').style.background=colors[s];
+}
+document.getElementById('prev').onclick=()=>{shown.setMonth(shown.getMonth()-1);render()};
+document.getElementById('next').onclick=()=>{shown.setMonth(shown.getMonth()+1);render()};
+document.getElementById('todayBtn').onclick=()=>{shown=new Date();shown.setDate(1);render()};
+render();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+ navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
